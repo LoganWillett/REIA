@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Property Investment Analyzer</title>
+<!-- Leaflet (CDN) -->
+<link crossorigin="" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" rel="stylesheet"/>
+<script crossorigin="" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="./css/styles.css" rel="stylesheet"/>
+</head>
+<body>
+<header class="topbar">
+<div class="brand">
+<div class="brand__title">RE Investment Analyzer</div>
+<div class="brand__sub">Blue accents • Gold outlines • Local-first</div>
+</div>
+<nav aria-label="Primary" class="nav" id="tabNav">
+<button class="tabbtn" data-tab="overview">Overview</button>
+<button class="tabbtn" data-tab="inputs">Inputs</button>
+<button class="tabbtn" data-tab="location">Location</button>
+<button class="tabbtn" data-tab="proforma">Pro Forma</button>
+<button class="tabbtn" data-tab="amortization">Amortization</button>
+<button class="tabbtn" data-tab="flip">Flip</button>
+<button class="tabbtn" data-tab="brrrr">BRRRR</button>
+<button class="tabbtn" data-tab="sensitivity">Sensitivity</button>
+<button class="tabbtn" data-tab="montecarlo">Monte Carlo</button>
+  <button class="tabbtn" data-tab="transactions">Transactions</button>
+  <button class="tabbtn" data-tab="actuals">Actuals</button>
+<button class="tabbtn" data-tab="portfolio">Portfolio</button>
+</nav>
+<div class="actions">
+<button class="btn" id="btnImport">Import Text</button>
+<button class="btn" id="btnExport">Export JSON</button>
+<button class="btn" id="btnSavePortfolio">Save</button>
+<button class="btn btn--ghost" id="btnReset">New</button>
+<button class="btn btn--ghost" id="btnHelp">Help</button><button class="btn btn--ghost" id="btnAbout">About</button>
+</div>
+</header>
+<main class="container">
+<div class="statusRow">
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+  <div class="pillbar" aria-label="Status indicators">
+    <button class="pill pill--issues" id="btnIssues" type="button" title="Show missing inputs and warnings">Issues: 0</button>
+    <div class="pill good" id="pillDirty" title="Autosave status">Saved</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section class="tab" id="tab-overview">
+<div class="grid-2">
+<div class="card">
+<h2>Key Metrics <button aria-label="Help: Key Metrics" class="iconbtn" data-help="overview.keyMetrics" type="button">ⓘ</button></h2>
+<div class="kpis" id="kpis"></div>
+</div>
+<div class="card">
+<h2>Quick Notes <button aria-label="Help: Quick Notes" class="iconbtn" data-help="overview.quickNotes" type="button">ⓘ</button></h2>
+<textarea class="field" data-field="notes" placeholder="Anything you want saved with the deal…" rows="10"></textarea>
+<div class="hint">Autosaves locally. Use <b>Export JSON</b> if you want to move it between machines.</div>
+</div>
+</div>
+<div class="card">
+<h2>Health Checks <button aria-label="Help: Health Checks" class="iconbtn" data-help="overview.healthChecks" type="button">ⓘ</button></h2>
+<div class="checks" id="healthChecks"></div>
+</div>
+</section>
+<!-- INPUTS -->
+<section class="tab" id="tab-inputs">
+<div class="inputsToolbar" aria-label="Inputs tools">
+  <div class="searchGroup">
+    <input class="field field--sm" id="inputSearch" placeholder="Search inputs…"/>
+    <button class="btn btn--small btn--ghost" id="btnSearchPrev" type="button" title="Previous match">◀</button>
+    <button class="btn btn--small btn--ghost" id="btnSearchNext" type="button" title="Next match">▶</button>
+    <span class="searchMeta" id="searchMeta" aria-live="polite">0</span>
+  </div>
+  <div class="searchGroup">
+    <button class="btn btn--small btn--ghost" id="btnExpandAll" type="button">Expand all</button>
+    <button class="btn btn--small btn--ghost" id="btnCollapseAll" type="button">Collapse all</button>
+  </div>
+</div>
+
+<div class="grid-2">
+<div class="card">
+<h2>Property <button aria-label="Help: Property" class="iconbtn" data-help="inputs.property" type="button">ⓘ</button></h2>
+<div class="form">
+<label class="label">Name <input class="field" data-field="propertyName" placeholder="e.g., 123 Pine St Duplex"/></label>
+<div class="row">
+<label class="label">Units <input class="field" data-field="units" min="1" step="1" type="number"/></label>
+<label class="label">Class <select class="field" data-field="propertyClass">
+<option>A</option><option>B</option><option selected="">C</option><option>D</option>
+</select></label>
+</div>
+<label class="label">Address <input class="field" data-field="address" placeholder="Street, City, State ZIP"/></label>
+</div>
+</div>
+<div class="card">
+<h2>Acquisition <button aria-label="Help: Acquisition" class="iconbtn" data-help="inputs.acquisition" type="button">ⓘ</button></h2>
+<div class="form">
+<div class="row">
+<label class="label">Purchase Price ($) <input class="field" data-field="purchasePrice" min="0" step="1000" type="number"/></label>
+<label class="label">Closing Costs ($) <input class="field" data-field="closingCosts" min="0" step="100" type="number"/></label>
+</div>
+<div class="row">
+<label class="label">Rehab ($) <input class="field" data-field="rehabCosts" min="0" step="100" type="number"/></label>
+<label class="label">ARV / Appraisal ($) <input class="field" data-field="afterRepairValue" min="0" step="1000" type="number"/></label>
+</div>
+</div>
+</div>
+</div>
+<div class="grid-2">
+<div class="card">
+<h2>Financing <button aria-label="Help: Financing" class="iconbtn" data-help="inputs.financing" type="button">ⓘ</button></h2>
+<div class="form">
+<div class="row">
+<label class="label">Down Payment (%) <input class="field" data-field="downPaymentPct" max="100" min="0" step="0.25" type="number"/></label>
+<label class="label">Interest Rate (%) <input class="field" data-field="interestRate" max="25" min="0" step="0.01" type="number"/></label>
+</div>
+<div class="row">
+<label class="label">Term (years) <input class="field" data-field="termYears" max="50" min="1" step="1" type="number"/></label>
+<label class="label">Loan Fees ($) <input class="field" data-field="loanFees" min="0" step="50" type="number"/></label>
+</div>
+<div class="row">
+<label class="label">Points (%) <input class="field" data-field="pointsPct" max="10" min="0" step="0.125" type="number"/></label>
+<label class="label">Loan Amount ($) <input class="field" data-field="loanAmount" min="0" step="1000" type="number"/></label>
+</div>
+<div class="hint">Loan Amount auto-calculates from Purchase Price and Down Payment %, unless you override it.</div>
+</div>
+</div>
+<div class="card">
+<h2>Income <button aria-label="Help: Income" class="iconbtn" data-help="inputs.income" type="button">ⓘ</button></h2>
+<div class="form">
+<label class="label">Monthly Rent (total) ($) <input class="field" data-field="rentMonthly" min="0" step="25" type="number"/></label>
+<div class="subhead">Other Income Lines</div>
+<div class="lines" id="otherIncomeLines"></div>
+<div class="row">
+<button class="btn btn--small" id="btnAddIncomeLine">+ Add income line</button>
+<button class="btn btn--small btn--ghost" id="btnClearIncomeLines">Clear</button>
+</div>
+</div>
+</div>
+</div>
+<div class="grid-2">
+<div class="card">
+<h2>Operating Expenses <button aria-label="Help: Operating Expenses" class="iconbtn" data-help="inputs.operating" type="button">ⓘ</button></h2>
+<div class="form">
+<div class="row">
+<label class="label">Taxes (annual) ($) <input class="field" data-field="propertyTaxesAnnual" min="0" step="50" type="number"/></label>
+<label class="label">Insurance (annual) ($) <input class="field" data-field="insuranceAnnual" min="0" step="50" type="number"/></label>
+</div>
+<div class="row">
+<label class="label">HOA (monthly) ($) <input class="field" data-field="hoaMonthly" min="0" step="10" type="number"/></label>
+<label class="label">Utilities (monthly) ($) <input class="field" data-field="utilitiesMonthly" min="0" step="10" type="number"/></label>
+</div>
+<div class="row">
+<label class="label">Vacancy (%) <input class="field" data-field="vacancyPct" max="50" min="0" step="0.25" type="number"/></label>
+<label class="label">Mgmt (%) <input class="field" data-field="managementPct" max="30" min="0" step="0.25" type="number"/></label>
+</div>
+<div class="row">
+<label class="label">Maintenance (%) <input class="field" data-field="maintenancePct" max="30" min="0" step="0.25" type="number"/></label>
+<label class="label">CapEx Reserve (%) <input class="field" data-field="capexPct" max="30" min="0" step="0.25" type="number"/></label>
+</div>
+<div class="subhead">Other Expense Lines</div>
+<div class="lines" id="otherExpenseLines"></div>
+<div class="row">
+<button class="btn btn--small" id="btnAddExpenseLine">+ Add expense line</button>
+<button class="btn btn--small btn--ghost" id="btnClearExpenseLines">Clear</button>
+</div>
+</div>
+</div>
+<div class="card">
+<h2>Exit Assumptions <button aria-label="Help: Exit Assumptions" class="iconbtn" data-help="inputs.exit" type="button">ⓘ</button></h2>
+<div class="form">
+<div class="row">
+<label class="label">Holding Period (years) <input class="field" data-field="holdingYears" max="50" min="0" step="1" type="number"/></label>
+<label class="label">Selling Costs (%) <input class="field" data-field="sellingCostPct" max="15" min="0" step="0.25" type="number"/></label>
+</div>
+<div class="row">
+<label class="label">Appreciation (%/yr) <input class="field" data-field="appreciationRate" max="20" min="-10" step="0.1" type="number"/></label>
+<label class="label">Exit Cap Rate (%) <input class="field" data-field="exitCapRate" max="20" min="0" step="0.1" type="number"/></label>
+</div>
+<div class="hint">Exit Cap Rate is used in the Monte Carlo tab (NOI-based valuation).</div>
+</div>
+</div>
+</div>
+</section>
+<!-- LOCATION -->
+<section class="tab" id="tab-location">
+<div class="grid-2">
+<div class="card">
+<h2>Map Context <button aria-label="Help: Map Context" class="iconbtn" data-help="location.mapContext" type="button">ⓘ</button></h2>
+<div class="form">
+<label class="label">Search / Address <input class="field" id="geoQuery" placeholder="e.g., 123 Pine St, Boise, ID"/></label>
+<div class="row">
+<button class="btn" id="btnGeocode">Find on map</button>
+<button class="btn btn--ghost" id="btnUseInputsAddress">Use Inputs address</button>
+</div>
+<div class="row">
+<label class="label">Latitude <input class="field" data-field="lat" step="0.000001" type="number"/></label>
+<label class="label">Longitude <input class="field" data-field="lng" step="0.000001" type="number"/></label>
+</div>
+<div class="hint">
+              Uses OpenStreetMap tiles and geocoding (Nominatim) — end-user-triggered only, with local caching. Tiles require visible attribution. 
+            </div>
+</div>
+</div>
+<div class="card">
+<h2>Map <button aria-label="Help: Map" class="iconbtn" data-help="location.map" type="button">ⓘ</button></h2>
+<div class="map" id="map"></div>
+<div class="hint">
+            Attribution must be visible and not hidden. 
+          </div>
+</div>
+</div>
+</section>
+<!-- PRO FORMA -->
+<section class="tab" id="tab-proforma">
+<div class="grid-2">
+<div class="card">
+<h2>Income &amp; Expenses (Annual) <button aria-label="Help: Income &amp; Expenses (Annual)" class="iconbtn" data-help="proforma.table" type="button">ⓘ</button></h2>
+<div class="tablewrap" id="proformaTable"></div>
+</div>
+<div class="card">
+<h2>Cash Flow Breakdown <button aria-label="Help: Cash Flow Breakdown" class="iconbtn" data-help="proforma.breakdown" type="button">ⓘ</button></h2>
+<div class="breakdown" id="cashflowBreakdown"></div>
+</div>
+</div>
+</section>
+<!-- AMORTIZATION -->
+<section class="tab" id="tab-amortization">
+<div class="card">
+<h2>Amortization Schedule <button aria-label="Help: Amortization Schedule" class="iconbtn" data-help="amort.schedule" type="button">ⓘ</button></h2>
+<div class="row">
+<label class="label">Show first
+            <select class="field" id="amortRows">
+<option value="120">10 years</option>
+<option selected="" value="360">Full term</option>
+<option value="60">5 years</option>
+<option value="24">2 years</option>
+</select>
+</label>
+<button class="btn btn--ghost" id="btnDownloadAmort">Download CSV</button>
+</div>
+<div class="tablewrap" id="amortTable"></div>
+</div>
+</section>
+<!-- FLIP -->
+<section class="tab" id="tab-flip">
+<div class="grid-2">
+<div class="card">
+<h2>Flip Inputs <button aria-label="Help: Flip Inputs" class="iconbtn" data-help="flip.inputs" type="button">ⓘ</button></h2>
+<div class="form">
+<div class="row">
+<label class="label">Resale Price ($) <input class="field" data-field="flipResalePrice" min="0" step="1000" type="number"/></label>
+<label class="label">Months Held <input class="field" data-field="flipMonthsHeld" min="0" step="1" type="number"/></label>
+</div>
+<div class="row">
+<label class="label">Holding Costs (monthly) ($) <input class="field" data-field="flipHoldingCostsMonthly" min="0" step="25" type="number"/></label>
+<label class="label">Extra Selling Costs ($) <input class="field" data-field="flipExtraSellingCosts" min="0" step="50" type="number"/></label>
+</div>
+<div class="hint">Flip math uses your acquisition + financing assumptions plus these flip-specific values.</div>
+</div>
+</div>
+<div class="card">
+<h2>Flip Results <button aria-label="Help: Flip Results" class="iconbtn" data-help="flip.results" type="button">ⓘ</button></h2>
+<div class="kpis" id="flipResults"></div>
+</div>
+</div>
+</section>
+<!-- BRRRR -->
+<section class="tab" id="tab-brrrr">
+<div class="grid-2">
+<div class="card">
+<h2>Refinance Assumptions <button aria-label="Help: Refinance Assumptions" class="iconbtn" data-help="brrrr.assumptions" type="button">ⓘ</button></h2>
+<div class="form">
+<div class="row">
+<label class="label">Refi LTV (%) <input class="field" data-field="brrrrRefiLtvPct" max="100" min="0" step="0.25" type="number"/></label>
+<label class="label">Refi Costs ($) <input class="field" data-field="brrrrRefiCosts" min="0" step="50" type="number"/></label>
+</div>
+<div class="row">
+<label class="label">Refi Rate (%) <input class="field" data-field="brrrrRefiRate" max="25" min="0" step="0.01" type="number"/></label>
+<label class="label">Refi Term (years) <input class="field" data-field="brrrrRefiTermYears" max="50" min="1" step="1" type="number"/></label>
+</div>
+</div>
+</div>
+<div class="card">
+<h2>BRRRR Results <button aria-label="Help: BRRRR Results" class="iconbtn" data-help="brrrr.results" type="button">ⓘ</button></h2>
+<div class="kpis" id="brrrrResults"></div>
+</div>
+</div>
+</section>
+<!-- SENSITIVITY -->
+<section class="tab" id="tab-sensitivity">
+<div class="card">
+<h2>Sensitivity Grid <button aria-label="Help: Sensitivity Grid" class="iconbtn" data-help="sens.grid" type="button">ⓘ</button></h2>
+<div class="row">
+<label class="label">Rent Δ (%) <input class="field" id="sensRentDelta" step="1" type="number" value="10"/></label>
+<label class="label">Vacancy Δ (pp) <input class="field" id="sensVacDelta" step="0.5" type="number" value="3"/></label>
+<label class="label">Grid size <select class="field" id="sensSize">
+<option value="3">3x3</option>
+<option selected="" value="5">5x5</option>
+<option value="7">7x7</option>
+</select></label>
+<button class="btn" id="btnRunSensitivity">Run</button>
+</div>
+<div class="hint">Shows Cash-on-Cash (%) for combinations of rent and vacancy adjustments.</div>
+<div class="tablewrap" id="sensTable"></div>
+</div>
+</section>
+<!-- MONTE CARLO -->
+<section class="tab" id="tab-montecarlo">
+<div class="grid-2">
+<div class="card">
+<h2>Simulation Settings <button aria-label="Help: Simulation Settings" class="iconbtn" data-help="mc.settings" type="button">ⓘ</button></h2>
+<div class="form">
+<div class="row">
+<label class="label">Runs <input class="field" id="mcRuns" max="50000" min="100" step="100" type="number" value="3000"/></label>
+<label class="label">Years <input class="field" id="mcYears" max="50" min="1" step="1" type="number" value="10"/></label>
+</div>
+<div class="subhead">Distributions (mean ± stdev)</div>
+<div class="row">
+<label class="label">Rent growth (%/yr) <input class="field" id="mcRent" type="text" value="3 ± 2"/></label>
+<label class="label">Expense growth (%/yr) <input class="field" id="mcExp" type="text" value="3 ± 1.5"/></label>
+</div>
+<div class="row">
+<label class="label">Appreciation (%/yr) <input class="field" id="mcAppr" type="text" value="3 ± 3"/></label>
+<label class="label">Vacancy (%) <input class="field" id="mcVac" type="text" value="5 ± 2"/></label>
+</div>
+<div class="row">
+<label class="label">Exit method
+                <select class="field" id="mcExitMethod">
+<option value="appreciation">Sale via appreciation</option>
+<option selected="" value="exitcap">Sale via Exit Cap (NOI)</option>
+</select>
+</label>
+<button class="btn" id="btnRunMC">Run Monte Carlo</button>
+</div>
+<div class="hint">
+              Nominatim/geocoding is not used here; this is fully offline math once inputs are set.
+            </div>
+</div>
+</div>
+<div class="card">
+<h2>Results <button aria-label="Help: Results" class="iconbtn" data-help="mc.results" type="button">ⓘ</button></h2>
+<div class="kpis" id="mcResults"></div>
+<div class="checks" id="mcSummary"></div>
+</div>
+</div>
+</section>
+<!-- TRANSACTIONS -->
+<section class="tab" id="tab-transactions">
+  <div class="grid-2">
+    <div class="card">
+      <h2>Import & Add Transactions <button aria-label="Help: Transactions" class="iconbtn" data-help="tx.overview" type="button">ⓘ</button></h2>
+      <div class="form">
+        <div class="subhead">Import CSV</div>
+        <div class="hint">
+          Import a bank/credit-card CSV. You'll map columns once, then review results.
+          (Tip: positive amounts usually mean income; negative means expense.)
+        </div>
+        <input class="field" id="txFile" type="file" accept=".csv,text/csv"/>
+        <div class="row">
+          <button class="btn" id="btnTxParse" type="button">Parse CSV</button>
+          <button class="btn btn--ghost" id="btnTxClearAll" type="button">Clear all</button>
+        </div>
+
+        <div class="subhead">Manual entry</div>
+        <div class="row">
+          <label class="label">Date <input class="field" id="txDate" type="date"/></label>
+          <label class="label">Amount <input class="field" id="txAmount" type="number" step="0.01" placeholder="0.00"/></label>
+        </div>
+        <label class="label">Description <input class="field" id="txDesc" placeholder="e.g., Rent, Home Depot, Insurance"/></label>
+        <div class="row">
+          <label class="label">Type
+            <select class="field" id="txType">
+              <option value="income">Income</option>
+              <option value="expense" selected>Expense</option>
+              <option value="debt">Debt</option>
+            </select>
+          </label>
+          <label class="label">Category
+            <select class="field" id="txCategory"></select>
+          </label>
+        </div>
+        <div class="row">
+          <label class="label">Property
+            <select class="field" id="txProperty"></select>
+          </label>
+          <button class="btn" id="btnTxAdd" type="button">Add</button>
+        </div>
+
+        <div class="subhead">Auto-categorization rules</div>
+        <div class="hint">Rules are keyword matches on the Description (case-insensitive).</div>
+        <div class="row">
+          <input class="field field--sm" id="ruleNeedle" placeholder="keyword (e.g., home depot)"/>
+          <select class="field field--sm" id="ruleCategory"></select>
+          <button class="btn btn--small" id="btnRuleAdd" type="button">+ Add rule</button>
+        </div>
+        <div class="tablewrap" id="rulesTable"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Transactions <button aria-label="Help: Transactions table" class="iconbtn" data-help="tx.table" type="button">ⓘ</button></h2>
+      <div class="row">
+        <label class="label">Filter property
+          <select class="field" id="txFilterProperty"></select>
+        </label>
+        <label class="label">Search
+          <input class="field" id="txSearch" placeholder="search description…"/>
+        </label>
+      </div>
+      <div class="tablewrap" id="txTable"></div>
+      <div class="hint">Stored locally in your browser (localStorage). Export Portfolio/JSON to move deals; transactions export is in Actuals.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ACTUALS -->
+<section class="tab" id="tab-actuals">
+  <div class="grid-2">
+    <div class="card">
+      <h2>Monthly Actuals <button aria-label="Help: Actuals" class="iconbtn" data-help="actuals.overview" type="button">ⓘ</button></h2>
+      <div class="row">
+        <label class="label">Property
+          <select class="field" id="actProperty"></select>
+        </label>
+        <button class="btn btn--ghost" id="btnActDownload" type="button">Download monthly CSV</button>
+      </div>
+      <div class="tablewrap" id="actualsTable"></div>
+    </div>
+
+    <div class="card">
+      <h2>KPIs from actuals <button aria-label="Help: Actual KPIs" class="iconbtn" data-help="actuals.kpis" type="button">ⓘ</button></h2>
+      <div class="kpis" id="actualsKpis"></div>
+      <div class="checks" id="actualsNotes"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section class="tab" id="tab-portfolio">
+<div class="grid-2">
+<div class="card">
+<h2>Saved Properties <button aria-label="Help: Saved Properties" class="iconbtn" data-help="portfolio.saved" type="button">ⓘ</button></h2>
+<div class="tablewrap" id="portfolioTable"></div>
+<div class="hint">Saved locally in your browser (localStorage).</div>
+</div>
+<div class="card">
+<h2>Portfolio Summary <button aria-label="Help: Portfolio Summary" class="iconbtn" data-help="portfolio.summary" type="button">ⓘ</button></h2>
+<div class="kpis" id="portfolioSummary"></div>
+<div class="row">
+<button class="btn btn--ghost" id="btnPortfolioExport">Export Portfolio JSON</button>
+<button class="btn btn--ghost" id="btnPortfolioImport">Import Portfolio JSON</button>
+</div>
+<input accept="application/json" hidden="" id="portfolioFile" type="file"/>
+</div>
+</div>
+</section>
+</main>
+<!-- Templates -->
+<template id="tplLine">
+<div class="line">
+<input class="field field--sm" data-line="label" placeholder="Label"/>
+<input class="field field--sm" data-line="amount" placeholder="0" step="10" type="number"/>
+<button class="btn btn--danger btn--small" data-line="remove" title="Remove">✕</button>
+</div>
+</template>
+<!-- Import Modal -->
+<div aria-hidden="true" aria-modal="true" class="modal" id="importModal" role="dialog">
+  <div class="modal__backdrop" data-close="importModal"></div>
+  <div class="modal__panel modal__panel--wide">
+    <div class="modal__head">
+      <div class="modal__titleRow">
+        <div class="modal__title">Import Text</div>
+        <button aria-label="Import help" class="iconbtn" id="btnImportHelp" type="button">ⓘ</button>
+      </div>
+      <div class="importPaneTabs" aria-label="Import modal tabs">
+        <button class="btn btn--small btn--ghost importPaneTab active" id="btnImportPaneWork" type="button">Work</button>
+        <button class="btn btn--small btn--ghost importPaneTab" id="btnImportPaneGuide" type="button">Guide</button>
+      </div>
+      <button class="btn btn--ghost" data-close="importModal">Close</button>
+    </div>
+
+    <div class="modal__body importLayout pane-work" id="importLayout">
+      <div class="importMain">
+        <div class="hint">
+          Paste a huge messy deal summary (from a listing, notes app, email, etc.) or a JSON export.
+          Click <b>Parse</b>, review/edit the mapped fields, then hit <b>Apply</b>.
+        </div>
+
+        <textarea class="field importTextArea" id="importText" data-autofocus
+          placeholder="Paste anything… Examples:
+Purchase Price: 350000
+Rent: 2800/mo
+Taxes: 3600/yr
+Rate: 6.75
+Down: 25%
+
+Or a paragraph:
+Asking $525k. Rent is $3,600/mo. Taxes $4,800/yr. Insurance $1,650/yr. 20% down at 6.75% for 30 years."
+          rows="9"></textarea>
+
+        <div class="importFooter">
+          <div class="row">
+            <button class="btn" id="btnImportParse" type="button">Parse</button>
+            <button class="btn" id="btnImportApply" type="button" disabled>Apply</button>
+            <button class="btn btn--ghost" id="btnImportClear" type="button">Clear</button>
+          </div>
+        </div>
+
+        <div class="subhead">Mapped fields (editable)</div>
+        <div class="importMapped" id="importMapped"></div>
+        <div class="hint">Tip: remove a row if it guessed wrong — it won’t be applied.</div>
+
+        <div class="subhead">Unrecognized lines</div>
+        <pre class="preview" id="importUnmapped"></pre>
+      </div>
+
+      <div class="importGuide">
+        <details class="details" open>
+          <summary>Import guide (formats + examples)</summary>
+          <div class="details__body">
+            <div class="subhead">Recommended format</div>
+            <ul class="bullets">
+              <li>One fact per line (best), but paragraphs work too</li>
+              <li>Use ':' or '=' when possible (Rent: $2800/mo)</li>
+              <li>Add /mo or /yr if it helps (Taxes: 3600/yr)</li>
+              <li>If you paste a listing, the parser will hunt for keywords + numbers</li>
+            </ul>
+
+            <div class="subhead">Examples</div>
+            <div class="row">
+              <button class="btn btn--small btn--ghost" data-import-example="rental" type="button">Load rental</button>
+              <button class="btn btn--small btn--ghost" data-import-example="flip" type="button">Load flip</button>
+              <button class="btn btn--small btn--ghost" data-import-example="brrrr" type="button">Load BRRRR</button>
+            </div>
+            <pre class="codeblock" id="importExampleBox"></pre>
+
+            <div class="subhead">Recognized keys</div>
+            <div class="hint" id="importKeys"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Issues Modal -->
+<div aria-hidden="true" aria-modal="true" class="modal" id="issuesModal" role="dialog">
+  <div class="modal__backdrop" data-close="issuesModal"></div>
+  <div class="modal__panel">
+    <div class="modal__head">
+      <div class="modal__title">Missing inputs &amp; warnings</div>
+      <button class="btn btn--ghost" data-close="issuesModal">Close</button>
+    </div>
+    <div class="modal__body">
+      <div class="hint">Click an item to jump to it. Missing items are required for reliable results.</div>
+      <div class="issueList" id="issuesList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- About Modal -->
+
+
+<!-- Help Modal -->
+<div aria-hidden="true" aria-modal="true" class="modal" id="helpModal" role="dialog">
+<div class="modal__backdrop" data-close="helpModal"></div>
+<div class="modal__panel">
+<div class="modal__head">
+<div class="modal__title" id="helpTitle">Help</div>
+<button class="btn btn--ghost" data-close="helpModal">Close</button>
+</div>
+<div class="modal__body">
+<div id="helpBody"></div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" aria-modal="true" class="modal" id="aboutModal" role="dialog">
+<div class="modal__backdrop" data-close="aboutModal"></div>
+<div class="modal__panel">
+<div class="modal__head">
+<div class="modal__title">About</div>
+<button class="btn btn--ghost" data-close="aboutModal">Close</button>
+</div>
+<div class="modal__body">
+<p class="hint">
+          This is a multi-file rebuild specifically to stop “buttons not working” problems caused by broken DOM structure.
+          Everything is local-first; no weather; map is just for context.
+        </p>
+<ul class="hint">
+<li>Map tiles: OpenStreetMap standard tiles, with visible attribution. </li>
+<li>Geocoding: Nominatim public API (end-user-triggered; cached; avoid bulk use). </li>
+</ul>
+</div>
+</div>
+</div>
+<script src="./js/app.js" type="module"></script>
+</body>
+</html>
